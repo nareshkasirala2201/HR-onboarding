@@ -32,6 +32,18 @@ A local FastAPI chat UI for general HR onboarding and policy questions. It sends
 
 5. Open http://localhost:8000.
 
+## Deploy to Netlify
+
+Netlify serves the HTML directly and uses the included serverless function for `/chat`. In the Netlify project settings, set the build publish directory to `.` and add these environment variables under **Project configuration > Environment variables**:
+
+```text
+AZURE_ENDPOINT=https://<your-resource>.services.ai.azure.com/openai/v1
+AZURE_DEPLOYMENT=gpt-5-mini
+AZURE_API_KEY=your-real-key
+```
+
+Trigger a new deploy after changing environment variables. The `netlify.toml` file configures the function and routes `/chat` to it. The Python FastAPI app remains the local development backend.
+
 ## Troubleshooting
 
 - `uvicorn --reload` watches `.py` files but **not** `.env`. After changing `.env`, fully stop the server with `Ctrl+C` and restart the uvicorn command.

@@ -76,7 +76,10 @@
       thinking.className = 'thinking'; thinking.textContent = 'Thinking...'; messages.append(thinking); messages.scrollTop = messages.scrollHeight;
       try {
         const response = await fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: history }) });
-        const data = await response.json();
+        const responseText = await response.text();
+        let data;
+        try { data = JSON.parse(responseText); }
+        catch { throw new Error('The chat service is unavailable. Please check the deployment configuration.'); }
         if (!response.ok) throw new Error(data.detail || 'Request failed');
         history.push({ role: 'assistant', content: data.reply });
         addMessage('assistant', data.reply);
