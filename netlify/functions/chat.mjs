@@ -18,10 +18,12 @@ export default async (request, context) => {
     .map(([name]) => name);
   if (missingSettings.length) {
     console.error('Missing Netlify environment settings:', missingSettings.join(', '));
-    return new Response(JSON.stringify({ detail: 'The HR assistant is not configured yet. Check the server environment settings.' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ detail: `The HR assistant is not configured yet. Missing or placeholder setting(s): ${missingSettings.join(', ')}. Update Netlify environment variables and redeploy.` }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 
   try {
+    const endpointUrl = new URL(endpoint);
+    if (endpointUrl.protocol !== 'https:') throw new Error('AZURE_ENDPOINT must use HTTPS');
     const body = await request.json();
     const messages = Array.isArray(body.messages) ? body.messages : [];
     const azureResponse = await fetch(`${endpoint.replace(/\/$/, '')}/chat/completions`, {

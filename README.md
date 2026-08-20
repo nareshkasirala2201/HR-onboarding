@@ -48,6 +48,7 @@ Trigger a new deploy after changing environment variables. Netlify does not inje
 
 - `uvicorn --reload` watches `.py` files but **not** `.env`. After changing `.env`, fully stop the server with `Ctrl+C` and restart the uvicorn command.
 - A 401 `Access denied due to invalid subscription key or wrong API endpoint` error means Azure rejected the request. Check the terminal log for the real exception, then verify that the key and endpoint match the new project's deployment page exactly.
+- If the published site says `Missing or placeholder setting(s)`, the named variable is not available to the Netlify Function or still contains a template value. Set it under **Environment variables**, ensure the scope includes **Functions**, then trigger a new deploy.
 - Isolate backend errors from the browser/UI with this quick PowerShell test:
 
   ```powershell
