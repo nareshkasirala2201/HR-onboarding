@@ -44,6 +44,8 @@ AZURE_API_KEY=your-real-key
 
 Trigger a new deploy after changing environment variables. Netlify does not inject newly added variables into an already-created deploy. The `netlify.toml` file configures the function and routes `/chat` to it. The Python FastAPI app remains the local development backend.
 
+The Netlify function has a fallback to the non-secret Azure resource endpoint above because some Netlify configurations do not expose the endpoint variable to Functions at runtime. The deployment name and API key are still required environment variables; the API key is never hardcoded.
+
 ## Troubleshooting
 
 - `uvicorn --reload` watches `.py` files but **not** `.env`. After changing `.env`, fully stop the server with `Ctrl+C` and restart the uvicorn command.

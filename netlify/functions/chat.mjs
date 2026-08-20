@@ -4,12 +4,14 @@ function getEnvironmentValue(name, context) {
   return context?.env?.get?.(name) ?? globalThis.Netlify?.env?.get?.(name) ?? process.env[name];
 }
 
+const DEFAULT_AZURE_ENDPOINT = 'https://aivedabot2.services.ai.azure.com/openai/v1';
+
 export default async (request, context) => {
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ detail: 'Method not allowed' }), { status: 405, headers: { 'Content-Type': 'application/json' } });
   }
 
-  const endpoint = getEnvironmentValue('AZURE_ENDPOINT', context);
+  const endpoint = getEnvironmentValue('AZURE_ENDPOINT', context) || DEFAULT_AZURE_ENDPOINT;
   const deployment = getEnvironmentValue('AZURE_DEPLOYMENT', context);
   const apiKey = getEnvironmentValue('AZURE_API_KEY', context);
   const settings = { AZURE_ENDPOINT: endpoint, AZURE_DEPLOYMENT: deployment, AZURE_API_KEY: apiKey };
