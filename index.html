@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome Desk | HR onboarding expert</title>
+  <style>
+    :root { --ink: #18333b; --muted: #6b7d7c; --paper: #f7f4ed; --line: #dfe4dc; --teal: #0f7470; --mint: #dff1e7; --coral: #e98b66; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; color: var(--ink); font-family: Georgia, 'Times New Roman', serif; background: radial-gradient(circle at 10% 10%, #fff8df 0 12%, transparent 30%), linear-gradient(135deg, #f7f4ed 0%, #e9f1e8 100%); }
+    .shell { width: min(920px, calc(100% - 32px)); margin: 0 auto; padding: 42px 0 28px; }
+    header { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+    .kicker { margin: 0 0 7px; color: var(--coral); font: 700 12px/1.2 Arial, sans-serif; letter-spacing: 2px; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(32px, 6vw, 58px); line-height: .95; font-weight: 500; }
+    .mark { width: 58px; height: 58px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; color: #fff; background: var(--teal); font: 700 22px Arial, sans-serif; transform: rotate(-8deg); }
+    .disclaimer { margin: 0 0 18px; color: var(--muted); font: 12px/1.4 Arial, sans-serif; }
+    .chat { overflow: hidden; display: flex; flex-direction: column; min-height: 610px; border: 1px solid var(--line); background: rgba(255,255,255,.72); box-shadow: 0 22px 70px rgba(24,51,59,.10); }
+    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; padding: 28px; }
+    .message { display: flex; gap: 10px; max-width: 78%; animation: appear .35s ease both; }
+    .message.user { align-self: end; flex-direction: row-reverse; }
+    .bubble { padding: 14px 17px; border-radius: 3px 18px 18px 18px; font-size: 17px; line-height: 1.45; white-space: pre-wrap; }
+    .user .bubble { border-radius: 18px 3px 18px 18px; background: var(--ink); color: #fff; }
+    .assistant .bubble { background: var(--mint); }
+    .avatar { width: 29px; height: 29px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; background: var(--coral); color: #fff; font: 700 12px Arial, sans-serif; }
+    .user .avatar { background: #aac7bc; color: var(--ink); }
+    .thinking { color: var(--muted); font: italic 14px Arial, sans-serif; }
+    form { display: flex; gap: 10px; padding: 15px; border-top: 1px solid var(--line); background: #fffdf8; }
+    textarea { min-height: 48px; max-height: 120px; flex: 1; resize: vertical; border: 1px solid var(--line); padding: 13px 15px; color: var(--ink); background: var(--paper); font: 16px Georgia, serif; outline: none; }
+    textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(15,116,112,.12); }
+    button { align-self: stretch; border: 0; padding: 0 23px; cursor: pointer; background: var(--teal); color: #fff; font: 700 14px Arial, sans-serif; }
+    button:hover { background: #095f5c; } button:disabled { cursor: wait; opacity: .6; }
+    @keyframes appear { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+    @media (max-width: 600px) { .shell { width: min(100% - 20px, 920px); padding-top: 24px; } header { align-items: center; } .chat { min-height: calc(100vh - 170px); } #messages { padding: 20px 14px; } .message { max-width: 92%; } form { padding: 10px; } button { padding: 0 16px; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header><div><p class="kicker">People operations</p><h1>Welcome Desk</h1></div><div class="mark" aria-hidden="true">HR</div></header>
+    <p class="disclaimer">General HR info - for personal matters, contact your HR team.</p>
+    <section class="chat" aria-label="HR onboarding chat">
+      <div id="messages" aria-live="polite"></div>
+      <form id="chat-form"><textarea id="input" rows="1" placeholder="Ask about getting started..." aria-label="Your question" required></textarea><button id="send" type="submit">Send</button></form>
+    </section>
+  </main>
+  <script>
+    const history = [];
+    const messages = document.querySelector('#messages');
+    const input = document.querySelector('#input');
+    const send = document.querySelector('#send');
+
+    function addMessage(role, content) {
+      const item = document.createElement('div');
+      item.className = `message ${role}`;
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.textContent = role === 'user' ? 'You' : 'HR';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = content;
+      item.append(avatar, bubble);
+      messages.append(item);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    addMessage('assistant', 'Hello! I can help with general onboarding steps, benefits basics, time off, and finding HR resources. What would you like to know?');
+
+    document.querySelector('#chat-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const content = input.value.trim();
+      if (!content || send.disabled) return;
+      history.push({ role: 'user', content });
+      addMessage('user', content);
+      input.value = '';
+      send.disabled = true;
+      const thinking = document.createElement('div');
+      thinking.className = 'thinking'; thinking.textContent = 'Thinking...'; messages.append(thinking); messages.scrollTop = messages.scrollHeight;
+      try {
+        const response = await fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: history }) });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || 'Request failed');
+        history.push({ role: 'assistant', content: data.reply });
+        addMessage('assistant', data.reply);
+      } catch (error) { addMessage('assistant', error.message || 'Sorry, I am having trouble answering right now. Please try again.'); }
+      finally { thinking.remove(); send.disabled = false; input.focus(); }
+    });
+  </script>
+</body>
+</html>
