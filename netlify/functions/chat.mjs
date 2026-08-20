@@ -1,14 +1,23 @@
 const SYSTEM_PROMPT = "You are a friendly HR onboarding expert that helps new and current employees. You answer common questions about onboarding steps, company policies, benefits basics, time-off, and where to find internal resources, in clear, welcoming, professional language. Only answer from the policy information the company has provided; if something is unclear, sensitive, or specific to an individual's situation - such as pay, disputes, or personal records - direct them to the HR team or the official HR system rather than guessing. Never invent policies or share personal employee data. Be supportive and concise.";
 
-export default async (request) => {
+function getEnvironmentValue(name, context) {
+  return context?.env?.get?.(name) ?? globalThis.Netlify?.env?.get?.(name) ?? process.env[name];
+}
+
+export default async (request, context) => {
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ detail: 'Method not allowed' }), { status: 405, headers: { 'Content-Type': 'application/json' } });
   }
 
-  const endpoint = process.env.AZURE_ENDPOINT;
-  const deployment = process.env.AZURE_DEPLOYMENT;
-  const apiKey = process.env.AZURE_API_KEY;
-  if (!endpoint || !deployment || !apiKey || endpoint.includes('<your-resource>') || apiKey === 'paste-your-key') {
+  const endpoint = getEnvironmentValue('AZURE_ENDPOINT', context);
+  const deployment = getEnvironmentValue('AZURE_DEPLOYMENT', context);
+  const apiKey = getEnvironmentValue('AZURE_API_KEY', context);
+  const settings = { AZURE_ENDPOINT: endpoint, AZURE_DEPLOYMENT: deployment, AZURE_API_KEY: apiKey };
+  const missingSettings = Object.entries(settings)
+    .filter(([name, value]) => !value || value.includes?.('<your-resource>') || value === 'paste-your-key')
+    .map(([name]) => name);
+  if (missingSettings.length) {
+    console.error('Missing Netlify environment settings:', missingSettings.join(', '));
     return new Response(JSON.stringify({ detail: 'The HR assistant is not configured yet. Check the server environment settings.' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 

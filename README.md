@@ -42,7 +42,7 @@ AZURE_DEPLOYMENT=gpt-5-mini
 AZURE_API_KEY=your-real-key
 ```
 
-Trigger a new deploy after changing environment variables. The `netlify.toml` file configures the function and routes `/chat` to it. The Python FastAPI app remains the local development backend.
+Trigger a new deploy after changing environment variables. Netlify does not inject newly added variables into an already-created deploy. The `netlify.toml` file configures the function and routes `/chat` to it. The Python FastAPI app remains the local development backend.
 
 ## Troubleshooting
 
